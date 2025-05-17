@@ -1,0 +1,31 @@
+import { cn } from "@/lib/utils";
+
+const ProductPrice = ({
+  value,
+  className,
+}: {
+  value: number;
+  className?: string;
+}) => {
+  /*   const formatPrice = (value: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(value);
+  };
+ */
+  // ensure decimal values are rounded to 2 decimal places
+  console.log("value", value);
+  const stringValue = value.toFixed(2);
+  // get int and float
+  const [intValue, floatValue] = stringValue.split(".");
+  return (
+    <span className={cn("text-2xl", className)}>
+      <span className="text-xs align-super">$</span>
+      {intValue}
+      <span className="text-xs align-super">.{floatValue}</span>
+    </span>
+  );
+};
+
+export default ProductPrice;
