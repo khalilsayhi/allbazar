@@ -24,7 +24,7 @@ const Menu = () => {
           </Link>
         </Button>
         <Button asChild>
-          <Link href="/cart" style={{ textDecoration: "none" }}>
+          <Link href="/sign-in" style={{ textDecoration: "none" }}>
             <UserIcon /> Sign In
           </Link>
         </Button>
@@ -46,7 +46,7 @@ const Menu = () => {
               </Link>
             </Button>
             <Button asChild>
-              <Link href="/cart" style={{ textDecoration: "none" }}>
+              <Link href="/sign-in" style={{ textDecoration: "none" }}>
                 <UserIcon /> Sign In
               </Link>
             </Button>
