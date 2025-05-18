@@ -15,7 +15,6 @@ const ProductPrice = ({
   };
  */
   // ensure decimal values are rounded to 2 decimal places
-  console.log("value", value);
   const stringValue = value.toFixed(2);
   // get int and float
   const [intValue, floatValue] = stringValue.split(".");
