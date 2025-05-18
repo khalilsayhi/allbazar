@@ -4,7 +4,7 @@ const ProductPrice = ({
   value,
   className,
 }: {
-  value: string;
+  value: number;
   className?: string;
 }) => {
   /*   const formatPrice = (value: number) => {
@@ -15,9 +15,9 @@ const ProductPrice = ({
   };
  */
   // ensure decimal values are rounded to 2 decimal places
-  /*   const stringValue = value.toFixed(2); */
+  const stringValue = value.toFixed(2);
   // get int and float
-  const [intValue, floatValue] = value.split(".");
+  const [intValue, floatValue] = stringValue.split(".");
   return (
     <span className={cn("text-2xl", className)}>
       <span className="text-xs align-super">$</span>
