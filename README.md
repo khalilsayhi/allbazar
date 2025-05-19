@@ -2,7 +2,18 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First generate prisma client
+
+```bash
+npx prisma generate
+```
+
+Seed database if you want startup data
+```bash
+npx tsx ./db/seed.ts
+```
+
+Run the development server:
 
 ```bash
 npm run dev
