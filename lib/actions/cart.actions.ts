@@ -52,7 +52,7 @@ export async function addItemToCart(data: CartItem) {
             await prisma.cart.create({
                 data: newCart,
             })
-            revalidatePath(`/products/${product.slug}`)
+            revalidatePath(`/product/${product.slug}`)
             return {
                 success: true, message: `${product.name} added to cart successfully`
             }
@@ -75,7 +75,7 @@ export async function addItemToCart(data: CartItem) {
                     ...calcPrice(cart.items),
                 },
             })
-            revalidatePath(`/products/${product.slug}`)
+            revalidatePath(`/product/${product.slug}`)
             return {
                 success: true,
                 message: `${product.name} ${existingItem ? "updated in" : "added to"} cart`
@@ -142,7 +142,7 @@ export async function removeItemFromCart(productId: string) {
                 ...calcPrice(cart.items),
             },
         })
-        revalidatePath(`/products/${product.slug}`)
+        revalidatePath(`/product/${product.slug}`)
         return {success: false, message: `${product.name} was removed from cart successfully`};
 
 

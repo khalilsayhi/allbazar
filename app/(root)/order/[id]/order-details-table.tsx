@@ -1,75 +1,60 @@
-import {getMyCart} from "@/lib/actions/cart.actions";
-import {redirect} from "next/navigation";
-import {auth} from "@/auth";
-import {getUserById} from "@/lib/actions/user.actions";
-import CheckoutSteps from "@/components/shared/checkout-steps";
-import {Metadata} from "next";
-import {ShippingAddress} from "@/types";
+'use client';
+import {Order} from "@/types";
+import React from 'react';
+import {formatCurrency, formatDateTime, formatId} from "@/lib/utils";
 import {Card, CardContent} from "@/components/ui/card";
-import Link from "next/link";
-import {Button} from "@/components/ui/button";
+import {Badge} from "@/components/ui/badge";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import Link from "next/link";
 import Image from "next/image";
-import {formatCurrency} from "@/lib/utils";
-import PlaceOrderForm from "@/app/(root)/place-order/place-order-form";
 
-export const metadata: Metadata = {
-    title: "Place Order",
-}
 
-const PlaceOrderPage = async () => {
-
-    const cart = await getMyCart();
-    if (!cart || cart.items.length === 0) {
-        redirect("/cart")
-    }
-    const session = await auth()
-    const userId = session?.user?.id;
-    if (!userId) {
-        throw new Error("No user found. Please login to continue.");
-    }
-    const user = await getUserById(userId)
-
-    if (!user.address) {
-        redirect("/shipping-address")
-    }
-    if (!user.paymentMethod) {
-        redirect("/payment-method")
-    }
-    const userAddress = user.address as ShippingAddress;
+const OrderDetailsTable = ({order}: { order: Order }) => {
+    const {
+        id,
+        shippingAddress,
+        orderItems,
+        itemsPrice, shippingPrice, taxPrice, totalPrice, paymentMethod, isPaid, isDelivered, deliveredAt
+        , paidAt
+    } = order;
     return (
         <>
-            <CheckoutSteps current={3}/>
-            <h1 className="py-4 text-2xl">Place Order</h1>
-            <div className="grid md:grid-cols-3  md:gap-5">
-                <div className="md:col-span-2 overflow-x-auto space-y-4">
+            <h1 className="py-4 text-2xl">Order {formatId(order.id)}</h1>
+            <div className="grid md:grid-cols-3 md:gap-5">
+                <div className="col-span-2 overflow-x-auto space-y-4">
                     <Card>
-                        <CardContent className=" gap-4">
-                            <h1 className="text-xl pb-4">Shipping Address</h1>
-                            <p>{userAddress.fullName}, {userAddress.streetAddress}{" "}
-                                {userAddress.postalCode}, {userAddress.country}{" "}
+                        <CardContent className="p-4 gap-4">
+                            <h2 className="text-xl pb-4">Payment Method</h2>
+                            <p>{paymentMethod}</p>
+                            {isPaid ? (
+                                <Badge variant="secondary">Paid at {formatDateTime(paidAt!).dateTime}</Badge>
+                            ) : (
+                                <Badge variant="destructive">
+                                    Not paid
+                                </Badge>
+                            )}
+                        </CardContent>
+                    </Card>
+                    <Card className="my-2">
+                        <CardContent className="p-4 gap-4">
+                            <h2 className="text-xl pb-4">Shipping address</h2>
+                            <p>{shippingAddress.fullName}</p>
+                            <p>
+                                {shippingAddress.streetAddress}, {shippingAddress.city} {" "}
+                                {shippingAddress.postalCode}, {shippingAddress.country}
                             </p>
-                            <div className="mt-3">
-                                <Link href="/shipping-address">
-                                    <Button>Edit</Button>
-                                </Link>
-                            </div>
+                            {isDelivered ? (
+                                <Badge variant="secondary">Delivered at {formatDateTime(deliveredAt!).dateTime}</Badge>
+                            ) : (
+                                <Badge variant="destructive">
+                                    Not Delivered
+                                </Badge>
+                            )}
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardContent className="gap-4">
-                            <h1 className="text-xl pb-4">Payment Method</h1>
-                            <p>{user.paymentMethod}</p>
-                            <div className="mt-3">
-                                <Link href="/payment-method">
-                                    <Button>Edit</Button>
-                                </Link>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="gap-4">
-                            <h1 className="text-xl pb-4">Order Items</h1>
+                    <Card className="my-2">
+                        <CardContent className="p-4 gap-4">
+                            <h2 className="text-xl pb-4">Order Items</h2>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -79,7 +64,7 @@ const PlaceOrderPage = async () => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {cart.items.map(item => (
+                                    {orderItems.map(item => (
                                         <TableRow key={item.slug}>
                                             <TableCell>
                                                 <Link href={`/product/${item.slug}`}
@@ -106,27 +91,26 @@ const PlaceOrderPage = async () => {
                         <CardContent className="space-y-4 gap-4">
                             <div className="flex justify-between">
                                 <div>Items</div>
-                                <div>{formatCurrency(cart.itemsPrice)}</div>
+                                <div>{formatCurrency(itemsPrice)}</div>
                             </div>
                             <div className="flex justify-between">
                                 <div>Tax</div>
-                                <div>{formatCurrency(cart.taxPrice)}</div>
+                                <div>{formatCurrency(taxPrice)}</div>
                             </div>
                             <div className="flex justify-between">
                                 <div>Shipping</div>
-                                <div>{formatCurrency(cart.shippingPrice)}</div>
+                                <div>{formatCurrency(shippingPrice)}</div>
                             </div>
                             <div className="flex justify-between">
                                 <div>Total</div>
-                                <div>{formatCurrency(cart.totalPrice)}</div>
+                                <div>{formatCurrency(totalPrice)}</div>
                             </div>
-                            <PlaceOrderForm/>
                         </CardContent>
                     </Card>
                 </div>
             </div>
         </>
     )
-};
+}
 
-export default PlaceOrderPage;
+export default OrderDetailsTable;
