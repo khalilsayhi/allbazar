@@ -53,3 +53,63 @@ export function round2(value: number | string) {
         throw new Error("value is neither a number nor a string that can be parsed to a number");
     }
 }
+
+const CURRENCY_FORMATTER = new Intl.NumberFormat("fr-FR", {
+    currency: "EUR",
+    style: "currency",
+    minimumFractionDigits: 2,
+});
+
+export function formatCurrency(value: number | string | null): string {
+    if (typeof value === "number") {
+        return CURRENCY_FORMATTER.format(value)
+    } else if (typeof value === "string") {
+        return CURRENCY_FORMATTER.format(Number(value))
+    } else {
+        return "NaN";
+    }
+}
+
+export function formatId(id: string): string {
+    return `..${id.substring(id.length - 6)}`
+}
+
+export const formatDateTime = (dateString: Date) => {
+    const dateTimeOptions: Intl.DateTimeFormatOptions = {
+        month: 'short', // abbreviated month name (e.g., 'Oct')
+        year: 'numeric', // abbreviated month name (e.g., 'Oct')
+        day: 'numeric', // numeric day of the month (e.g., '25')
+        hour: 'numeric', // numeric hour (e.g., '8')
+        minute: 'numeric', // numeric minute (e.g., '30')
+        hour12: true, // use 12-hour clock (true) or 24-hour clock (false)
+    };
+    const dateOptions: Intl.DateTimeFormatOptions = {
+        weekday: 'short', // abbreviated weekday name (e.g., 'Mon')
+        month: 'short', // abbreviated month name (e.g., 'Oct')
+        year: 'numeric', // numeric year (e.g., '2023')
+        day: 'numeric', // numeric day of the month (e.g., '25')
+    };
+    const timeOptions: Intl.DateTimeFormatOptions = {
+        hour: 'numeric', // numeric hour (e.g., '8')
+        minute: 'numeric', // numeric minute (e.g., '30')
+        hour12: true, // use 12-hour clock (true) or 24-hour clock (false)
+    };
+    const formattedDateTime: string = new Date(dateString).toLocaleString(
+        'fr-FR',
+        dateTimeOptions
+    );
+    const formattedDate: string = new Date(dateString).toLocaleString(
+        'fr-FR',
+        dateOptions
+    );
+    const formattedTime: string = new Date(dateString).toLocaleString(
+        'fr-FR',
+        timeOptions
+    );
+    return {
+        dateTime: formattedDateTime,
+        dateOnly: formattedDate,
+        timeOnly: formattedTime,
+    };
+};
+
