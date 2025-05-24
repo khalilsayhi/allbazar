@@ -7,6 +7,9 @@ import {auth} from "@/auth";
 import {getUserById} from "@/lib/actions/user.actions";
 import {insertOrderSchema} from "@/lib/validators";
 import {prisma} from "@/db/prisma";
+import {paypal} from "@/lib/paypal";
+import {PaymentResult} from "@/types";
+import {revalidatePath} from "next/cache";
 
 
 // Create order
@@ -107,5 +110,124 @@ export async function getOrderById(orderId: string) {
     if (!order) {
         throw new Error("Order not found");
     }
+
     return convertToPlainObject(order);
+}
+
+// create new paypal order
+export async function createPaypalOrder(orderId: string) {
+    try {
+        const order = await prisma.order.findFirst({
+            where: {id: orderId,}
+        })
+        if (!order) {
+            throw new Error("Order not found");
+        }
+        const paypalOrder = await paypal.createOrder(Number(order.totalPrice))
+        await prisma.order.update({
+            where: {
+                id: orderId,
+            }, data: {
+                paymentResult: {id: paypalOrder.id, email_address: "", status: "", pricePaid: 0},
+            }
+        })
+        return {
+            success: true,
+            message: "Item order created successfully",
+            data: paypalOrder.id
+        }
+    } catch (e) {
+        return {success: false, message: formatError(e)};
+    }
+}
+
+// approve payment for paypal order
+export async function approvePaypalOrder(orderId: string, data: { orderID: string }) {
+    try {
+        const order = await prisma.order.findFirst({
+            where: {id: orderId,},
+        })
+        if (!order) {
+            throw new Error("Order not found");
+        }
+        const captureData = await paypal.capturePayment(data.orderID)
+        if (!captureData || captureData.id !== (order.paymentResult as PaymentResult).id || captureData.status !== "COMPLETED") {
+            throw new Error("Payment capture failed");
+        }
+
+        await updateOrderToPaid({
+            orderId, paymentResult: {
+                id: captureData.id,
+                status: captureData.status,
+                email_address: captureData.payer.email_address,
+                pricePaid: captureData.purchase_units[0]?.payments?.captures[0]?.amount?.value,
+            }
+        })
+
+        revalidatePath(`/order/${orderId}`);
+
+        return {
+            success: true,
+            message: "Your order has been paid successfully",
+        }
+    } catch (e) {
+        return {success: false, message: formatError(e)};
+    }
+}
+
+async function updateOrderToPaid({orderId, paymentResult}: { orderId: string, paymentResult?: PaymentResult }) {
+    try {
+        const order = await prisma.order.findFirst({
+            where: {
+                id: orderId,
+
+            },
+            include: {
+                orderitems: true
+            }
+        })
+        if (!order) {
+            throw new Error("Order not found");
+        }
+        if (order.isPaid) {
+            throw new Error("Order is already paid");
+        }
+
+        await prisma.$transaction(async (tx) => {
+            for (const item of order.orderitems) {
+                await tx.product.update({
+                    where: {id: item.productId},
+                    data: {
+                        stock: {
+                            decrement: item.qty
+                        }
+                    }
+                });
+            }
+            await tx.order.update({
+                where: {id: orderId},
+                data: {
+                    isPaid: true,
+                    paidAt: new Date(),
+                    paymentResult
+                }
+            })
+        })
+
+        const updatedOrder = await prisma.order.findFirst({
+            where: {
+                id: orderId,
+            }, include: {
+                orderitems: true,
+                user: {
+                    select: {name: true, email: true}
+                }
+            }
+        })
+        if (!updatedOrder) {
+            throw new Error("Failed to update order to paid");
+        }
+    } catch (e) {
+        throw new Error(`Failed to update order to paid: ${formatError(e)}`);
+    }
 }
