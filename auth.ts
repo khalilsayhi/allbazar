@@ -84,43 +84,47 @@ export const config = {
             if (user) {
                 token.id = user.id;
                 token.role = user.role;
-                if (user.name === "NO_NAME") {
-                    token.name = user.email!.split("@")[0];
+
+                // If user has no name then use the email
+                if (user.name === 'NO_NAME') {
+                    token.name = user.email!.split('@')[0];
+
+                    // Update database to reflect the token name
                     await prisma.user.update({
                         where: {id: user.id},
                         data: {name: token.name},
                     });
                 }
-                if (trigger === "signIn" || trigger === "signUp") {
-                    const cookiesObject = await cookies()
-                    const sessionCartId = cookiesObject.get("sessionCartId")?.value
+
+                if (trigger === 'signIn' || trigger === 'signUp') {
+                    const cookiesObject = await cookies();
+                    const sessionCartId = cookiesObject.get('sessionCartId')?.value;
+
                     if (sessionCartId) {
                         const sessionCart = await prisma.cart.findFirst({
-                            where: {
-                                sessionCartId
-                            }
-                        })
+                            where: {sessionCartId},
+                        });
+
                         if (sessionCart) {
+                            // Delete current user cart
                             await prisma.cart.deleteMany({
-                                where: {
-                                    userId: user.id
-                                }
-                            })
+                                where: {userId: user.id},
+                            });
+
+                            // Assign new cart
                             await prisma.cart.update({
-                                where: {
-                                    id: sessionCart.id
-                                }, data: {
-                                    userId: user.id
-                                }
-                            })
+                                where: {id: sessionCart.id},
+                                data: {userId: user.id},
+                            });
                         }
                     }
                 }
             }
 
-            if (session?.user.name && trigger === "update") {
-                token.name === session.user.name
+            if (session?.user.name && trigger === 'update') {
+                token.name = session.user.name;
             }
+
             return token;
         },
         authorized({request, auth}: any) {
