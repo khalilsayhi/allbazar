@@ -1,5 +1,6 @@
 import {z} from "zod";
 import {formatNumber} from "./utils";
+import {PAYMENT_METHODS} from "@/types";
 
 const currency = z
 .string()
@@ -64,4 +65,41 @@ export const insertCartSchema = z.object({
     taxPrice: currency,
     sessionCartId: z.string().min(1, "session cart id is required"),
     userId: z.string().optional().nullable(),
+})
+
+// Schema for shipping address
+export const shippingAddressSchema = z.object({
+    fullName: z.string().min(3, "Nom doit étre composé de 3 caractères"),
+    streetAddress: z.string().min(3, "Adresse doit étre composé de 3 caractères"),
+    city: z.string().min(5, "Ville doit étre composé de 5 caractères"),
+    postalCode: z.string().min(5, "Code postale doit étre composé de 5 caractères"),
+    country: z.string().min(3, "Pays doit étre composé de 3 caractères"),
+    lat: z.number().optional(),
+    lon: z.number().optional()
+})
+
+// Schema for payment methods
+export const paymentMethodSchema = z.object({
+    type: z.string().min(1, "Methode de payement est requise"),
+}).refine((data) => PAYMENT_METHODS.includes(data.type))
+
+// Schema for inserting order
+export const insertOrderSchema = z.object({
+    userId: z.string().min(1, "User ID is required"),
+    itemsPrice: currency,
+    totalPrice: currency,
+    shippingPrice: currency,
+    taxPrice: currency,
+    paymentMethod: z.string().refine((data) => PAYMENT_METHODS.includes(data), "Methode de payement non valide"),
+    shippingAddress: shippingAddressSchema,
+})
+
+// Schema for inserting order item
+export const insertOrderItemSchema = z.object({
+    productId: z.string().min(1, "Product ID is required"),
+    name: z.string().min(1, "Name is required"),
+    slug: z.string().min(1, "Slug is required"),
+    image: z.string().min(1, "Image is required"),
+    price: currency,
+    qty: z.number(),
 })
