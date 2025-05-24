@@ -5,6 +5,7 @@ import {
     insertOrderItemSchema,
     insertOrderSchema,
     insertProductSchema,
+    paymentResultSchema,
     shippingAddressSchema
 } from "@/lib/validators";
 
@@ -28,6 +29,7 @@ export type Order = z.infer<typeof insertOrderSchema> & {
     orderItems: OrderItem[];
     user: { name: string; email: string };
 };
+export type PaymentResult = z.infer<typeof paymentResultSchema>
 
 
 export const PAYMENT_METHODS = process.env.PAYMENT_METHODS ? process.env.PAYMENT_METHODS.split(",") : ["PayPal", "Stripe", "Cash on Delivery"];
