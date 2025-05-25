@@ -32,5 +32,5 @@ export type Order = z.infer<typeof insertOrderSchema> & {
 export type PaymentResult = z.infer<typeof paymentResultSchema>
 
 
-export const PAYMENT_METHODS = process.env.PAYMENT_METHODS ? process.env.PAYMENT_METHODS.split(",") : ["PayPal", "Stripe", "Cash on Delivery"];
+export const PAYMENT_METHODS = process.env.PAYMENT_METHODS ? process.env.PAYMENT_METHODS.split(",") : ["PayPal", "Stripe", "CashOnDelivery"];
 export const DEFAULT_PAYMENT_METHOD = "PayPal"
