@@ -9,6 +9,7 @@ import {
     paymentResultSchema,
     shippingAddressSchema
 } from "@/lib/validators";
+import {PaymentMethods} from "@/enums/paymentMethods";
 
 export type Product = z.infer<typeof insertProductSchema> & {
     id: string;
@@ -39,4 +40,4 @@ export type Review = z.infer<typeof insertReviewSchema> & {
 };
 
 export const PAYMENT_METHODS = process.env.PAYMENT_METHODS ? process.env.PAYMENT_METHODS.split(",") : ["PayPal", "Stripe", "CashOnDelivery"];
-export const DEFAULT_PAYMENT_METHOD = "PayPal"
+export const DEFAULT_PAYMENT_METHOD = PaymentMethods.PayPal
