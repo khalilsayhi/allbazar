@@ -2,9 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import {APP_NAME} from "@/lib/constants";
 import Menu from "@/components/shared/header/menu";
-import {Input} from "@/components/ui/input";
 import {ReactNode} from "react";
 import MainNav from "@/app/admin/main-nav";
+import AdminSearch from "@/components/admin/admin-search";
 
 export default function AdminLayout(
     {
@@ -22,9 +22,7 @@ export default function AdminLayout(
                         </Link>
                         <MainNav className="mx-6"/>
                         <div className="ml-auto items-center flex space-x-4">
-                            <div>
-                                <Input type="search" placeholder="Search..." className="md:w-[300px]"/>
-                            </div>
+                            <AdminSearch/>
                             <Menu/>
                         </div>
                     </div>
