@@ -11,12 +11,15 @@ import {PayPalButtons, PayPalScriptProvider, usePayPalScriptReducer} from "@payp
 import {approvePaypalOrder, createPaypalOrder, deliverOrder, updateOrderToPaidCOD} from "@/lib/actions/order.actions";
 import {toast} from "sonner";
 import {Button} from "@/components/ui/button";
+import StripePayment from "@/app/(root)/order/[id]/stripe-payment";
+import {PaymentMethods} from "@/enums/paymentMethods";
 
 
-const OrderDetailsTable = ({order, paypalClientId, isAdmin}: {
+const OrderDetailsTable = ({order, paypalClientId, isAdmin, stripeClientSecret}: {
     order: Order,
     paypalClientId: string,
     isAdmin: boolean
+    stripeClientSecret: string | null
 }) => {
     const {
         id,
@@ -177,7 +180,7 @@ const OrderDetailsTable = ({order, paypalClientId, isAdmin}: {
                                 <div>{formatCurrency(totalPrice)}</div>
                             </div>
                             {/*paypal payment*/}
-                            {!isPaid && paymentMethod === "PayPal" && (
+                            {!isPaid && paymentMethod === PaymentMethods.PayPal && (
                                 <div>
                                     <PayPalScriptProvider options={{clientId: paypalClientId, currency: "EUR"}}>
                                         <PrintLoadingState/>
@@ -186,14 +189,18 @@ const OrderDetailsTable = ({order, paypalClientId, isAdmin}: {
                                     </PayPalScriptProvider>
                                 </div>
                             )}
+                            {!isPaid && paymentMethod === PaymentMethods.Stripe && stripeClientSecret && (
+                                <StripePayment priceInCents={Math.round(Number(totalPrice) * 100)} orderId={id}
+                                               clientSecret={stripeClientSecret}/>
+                            )}
                             {/*cash on delivery*/}
                             {
-                                isAdmin && !isPaid && paymentMethod === "CashOnDelivery" && (
+                                isAdmin && !isPaid && paymentMethod === PaymentMethods.CashOnDelivery && (
                                     <MarkAsPaidButton/>
                                 )
                             }
                             {
-                                isAdmin && isPaid && !isDelivered && paymentMethod === "CashOnDelivery" && (
+                                isAdmin && isPaid && !isDelivered && paymentMethod === PaymentMethods.CashOnDelivery && (
                                     <MarkAsDeliveredButton/>
                                 )
                             }
