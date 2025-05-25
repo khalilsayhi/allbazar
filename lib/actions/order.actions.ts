@@ -314,8 +314,20 @@ export async function getOrderSummary() {
     };
 }
 
-export async function getAllOrders({limit = PAGE_SIZE, page}: { limit?: number, page: number }) {
-    const date = await prisma.order.findMany({
+export async function getAllOrders({limit = PAGE_SIZE, page, query}: { limit?: number, page: number, query: string }) {
+    const queryFilter: Prisma.OrderWhereInput =
+        query && query !== 'all'
+            ? {
+                user: {
+                    name: {
+                        contains: query,
+                        mode: 'insensitive',
+                    } as Prisma.StringFilter,
+                },
+            }
+            : {};
+    const data = await prisma.order.findMany({
+        where: {...queryFilter},
         orderBy: {createdAt: "desc"},
         take: limit,
         skip: limit * (page - 1),
@@ -327,7 +339,7 @@ export async function getAllOrders({limit = PAGE_SIZE, page}: { limit?: number, 
     })
     const dataCount = await prisma.order.count();
     return {
-        data: date,
+        data: data,
         totalPages: Math.ceil(dataCount / limit)
     };
 }

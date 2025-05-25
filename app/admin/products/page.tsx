@@ -36,8 +36,8 @@ const AdminProductsPage = async (props: {
                     {searchText && (
                         <div>
                             Filtered by <i>&quot;{searchText}&quot;</i>{' '}
-                            <Link href='/admin/products'>
-                                <Button variant='outline' size='sm'>
+                            <Link href='/admin/products' className="no-underline text-inherit hover:text-primary">
+                                <Button size='sm'>
                                     Remove Filter
                                 </Button>
                             </Link>
