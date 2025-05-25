@@ -19,6 +19,12 @@ export function formatNumber(value: number, decimalPlaces: number = 2): string {
     });
 }
 
+const NUMBER_FORMATTER = new Intl.NumberFormat("fr-FR", {})
+
+export function formatNumberWithFormatter(value: number): string {
+    return NUMBER_FORMATTER.format(value);
+}
+
 // Format errors
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function formatError(error: any) {

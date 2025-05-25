@@ -1,6 +1,6 @@
 'use client';
 import {Order} from "@/types";
-import React from 'react';
+import React, {useTransition} from 'react';
 import {formatCurrency, formatDateTime, formatId} from "@/lib/utils";
 import {Card, CardContent} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
@@ -8,11 +8,16 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/c
 import Link from "next/link";
 import Image from "next/image";
 import {PayPalButtons, PayPalScriptProvider, usePayPalScriptReducer} from "@paypal/react-paypal-js";
-import {approvePaypalOrder, createPaypalOrder} from "@/lib/actions/order.actions";
+import {approvePaypalOrder, createPaypalOrder, deliverOrder, updateOrderToPaidCOD} from "@/lib/actions/order.actions";
 import {toast} from "sonner";
+import {Button} from "@/components/ui/button";
 
 
-const OrderDetailsTable = ({order, paypalClientId}: { order: Order, paypalClientId: string }) => {
+const OrderDetailsTable = ({order, paypalClientId, isAdmin}: {
+    order: Order,
+    paypalClientId: string,
+    isAdmin: boolean
+}) => {
     const {
         id,
         shippingAddress,
@@ -47,6 +52,40 @@ const OrderDetailsTable = ({order, paypalClientId}: { order: Order, paypalClient
         } else {
             toast.success(res.message)
         }
+    }
+
+    const MarkAsPaidButton = () => {
+        const [isPending, startTransition] = useTransition()
+        const handleMarkAsPaid = async () => {
+            startTransition(async () => {
+                const res = await updateOrderToPaidCOD(id)
+                if (!res.success) {
+                    toast.error(res.message)
+                    return;
+                } else {
+                    toast.success(res.message)
+                }
+            })
+        }
+        return (<Button type="button" disabled={isPending}
+                        onClick={handleMarkAsPaid}>{isPending ? "Processing..." : "Mark As Paid"}</Button>)
+    }
+
+    const MarkAsDeliveredButton = () => {
+        const [isPending, startTransition] = useTransition()
+        const handleDeliver = async () => {
+            startTransition(async () => {
+                const res = await deliverOrder(id)
+                if (!res.success) {
+                    toast.error(res.message)
+                    return;
+                } else {
+                    toast.success(res.message)
+                }
+            })
+        }
+        return (<Button type="button" disabled={isPending}
+                        onClick={handleDeliver}>{isPending ? "Processing..." : "Mark As Delivered"}</Button>)
     }
 
     return (
@@ -147,6 +186,17 @@ const OrderDetailsTable = ({order, paypalClientId}: { order: Order, paypalClient
                                     </PayPalScriptProvider>
                                 </div>
                             )}
+                            {/*cash on delivery*/}
+                            {
+                                isAdmin && !isPaid && paymentMethod === "CashOnDelivery" && (
+                                    <MarkAsPaidButton/>
+                                )
+                            }
+                            {
+                                isAdmin && isPaid && !isDelivered && paymentMethod === "CashOnDelivery" && (
+                                    <MarkAsDeliveredButton/>
+                                )
+                            }
                         </CardContent>
                     </Card>
                 </div>
