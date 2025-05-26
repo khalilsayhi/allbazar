@@ -16,7 +16,7 @@ const Header = () => {
                         className="flex-start ml-4 no-underline hover:text-gray-600 text-inherit"
                     >
                         <Image
-                            src="/images/logo.svg"
+                            src="/images/logo.png"
                             alt={`${APP_NAME} logo`}
                             height={48}
                             width={48}
